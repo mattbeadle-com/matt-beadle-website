@@ -90,3 +90,50 @@ section#original-speaker-reel .speaker-reel-player{height:260px;aspect-ratio:aut
 
 .clip-share{margin-inline-start:.55rem}
 .clip-music-options .clip-share{margin-inline-start:0}
+
+@media (max-width: 600px) {
+  .hero h1, .page-intro h1, .article-hero h1 {
+    font-size: clamp(34px, 9.5vw, 48px);
+    overflow-wrap: break-word;
+  }
+
+  .grid2, .grid3, .split, .contact-layout, .form-grid, .list-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .navigation {
+    max-height: calc(100dvh - 76px);
+    overflow-y: auto;
+  }
+
+  .navigation > a, .menu-toggle, .filter, .clip-close, .clip-local.text-link, .clip-share {
+    min-height: 44px;
+  }
+
+  .filter-bar { gap: 8px; }
+  .filter { padding-inline: 12px; }
+
+  .work-item .clip-thumb {
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+
+  #clip-dialog {
+    width: calc(100% - 20px);
+    max-height: calc(100dvh - 20px);
+    padding: 12px;
+  }
+
+  .clip-dialog-head { gap: 10px; margin-bottom: 12px; }
+  .clip-dialog-head h2 { font-size: 18px; }
+  .clip-close { width: 44px; }
+  #clip-player { max-height: 70dvh; }
+
+  #enquiry :is(input, select, textarea) {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .footer-links, .contact-details { overflow-wrap: anywhere; }
+}
