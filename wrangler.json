@@ -1,0 +1,8 @@
+{
+  "name": "matt-beadle-website",
+  "pages_build_output_dir": "./public",
+  "compatibility_date": "2026-11-09",
+  "r2_buckets": [
+    { "binding": "WEBSITE_VIDEOS", "bucket_name": "mattbeadle-website" }
+  ]
+}
