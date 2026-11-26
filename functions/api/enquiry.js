@@ -1,4 +1,6 @@
 const MAX_BODY_LENGTH = 56000;
+const TURNSTILE_FIELD = 'cf-turnstile-response';
+const TURNSTILE_HOSTNAMES = new Set(['mattbeadle.com', 'www.mattbeadle.com']);
 const limits = {
   name: 120,
   email: 254,
@@ -34,6 +36,10 @@ export async function onRequestPost({ request, env }) {
   if (body.length > MAX_BODY_LENGTH) return reply(413, { ok: false });
   const form = new URLSearchParams(body);
   if (form.get('website')) return reply(400, { ok: false });
+  // Reject ambiguous duplicate fields before validating or delivering anything.
+  for (const field of ['website', TURNSTILE_FIELD, ...Object.keys(limits)]) {
+    if (form.getAll(field).length > 1) return reply(400, { ok: false });
+  }
 
   const values = {};
   for (const [field, limit] of Object.entries(limits)) {
@@ -46,7 +52,32 @@ export async function onRequestPost({ request, env }) {
   if (!name || !message || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return reply(400, { ok: false });
   }
-  if (!env.RESEND_API_KEY || !env.ENQUIRY_FROM) {
+  // This is enforced on the server: direct bot requests cannot bypass it.
+  // Reserve the owner's domain and its subdomains, including case/plus aliases.
+  const senderDomain = email.slice(email.lastIndexOf('@') + 1).toLowerCase().replace(/\.+$/, '');
+  if (senderDomain === 'mattbeadle.com' || senderDomain.endsWith('.mattbeadle.com')) {
+    return reply(422, { ok: false, code: 'sender_not_allowed' });
+  }
+  if (!env.RESEND_API_KEY || !env.ENQUIRY_FROM || !env.TURNSTILE_SECRET) {
+    return reply(503, { ok: false });
+  }
+
+  const token = form.get(TURNSTILE_FIELD);
+  if (!token || token.length > 2048) {
+    return reply(403, { ok: false, code: 'verification_failed' });
+  }
+  try {
+    const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!verification.ok) return reply(503, { ok: false });
+    const result = await verification.json();
+    if (result.success !== true || result.action !== 'contact' || !TURNSTILE_HOSTNAMES.has(result.hostname)) {
+      return reply(403, { ok: false, code: 'verification_failed' });
+    }
+  } catch {
     return reply(503, { ok: false });
   }
 
