@@ -65,8 +65,8 @@ enquiry?.addEventListener('submit', async event => {
     if (!response.ok || !result.ok) throw new Error('Delivery failed');
     enquiry.reset();
     status.textContent = german
-      ? 'Danke für deine Anfrage. Ich melde mich bei dir.'
-      : 'Thanks for your enquiry. I’ll be in touch.';
+      ? 'Danke für deine Anfrage. Ich freue mich darauf, mehr über deine Veranstaltung oder dein Filmprojekt zu erfahren.'
+      : 'Thanks for getting in touch. I’m looking forward to hearing about your event or film.';
   } catch {
     status.textContent = german
       ? 'Deine Anfrage konnte nicht gesendet werden. Versuch es bitte erneut oder schreib mir an matt@mattbeadle.com.'
